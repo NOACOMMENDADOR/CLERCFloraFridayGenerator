@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flora Friday Slide Generator — CLERC</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+/* ══════════════════════════════════════
+   APP SHELL
+   ══════════════════════════════════════ */
+:root {
+  --forest: #2D5A27;
+  --forest-deep: #1B3B15;
+  --sage: #E8F0E4;
+  --sage-mid: #C5D9BC;
+  --cream: #FDFAF5;
+  --cream-warm: #F7F0E5;
+  --amber: #D4890C;
+  --amber-light: #FEF3E0;
+  --amber-deep: #8B5E0F;
+  --bark-light: #8A7456;
+  --text-dark: #1A1A18;
+  --text-mid: #4A4A45;
+  --text-light: #7A7A72;
+  --ui-bg: #F4F1EC;
+  --ui-card: #FFFFFF;
+  --ui-border: #DDD8D0;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'DM Sans', sans-serif; background: var(--ui-bg); color: var(--text-dark); min-height: 100vh; }
+
+.topbar {
+  background: var(--forest-deep); padding: 14px 28px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.topbar-title { font-size: 15px; font-weight: 600; color: #fff; }
+.topbar-sub { font-size: 12px; color: rgba(255,255,255,.45); }
+.topbar-actions { display: flex; gap: 8px; }
+
+.btn {
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+  border: none; border-radius: 8px; padding: 9px 18px; cursor: pointer;
+  transition: all .15s; display: inline-flex; align-items: center; gap: 6px;
+}
+.btn:active { transform: scale(.97); }
+.btn-primary { background: #fff; color: var(--forest-deep); }
+.btn-primary:hover { background: var(--sage); }
+.btn-ghost { background: rgba(255,255,255,.1); color: rgba(255,255,255,.8); border: 1px solid rgba(255,255,255,.15); }
+.btn-ghost:hover { background: rgba(255,255,255,.18); }
+.btn-big {
+  background: var(--forest); color: #fff; padding: 14px 28px; font-size: 15px;
+  border-radius: 10px; width: 100%; justify-content: center; margin-top: 12px;
+}
+.btn-big:hover { background: var(--forest-deep); }
+
+.app { display: flex; min-height: calc(100vh - 52px); }
+
+/* Form */
+.form-panel {
+  width: 400px; min-width: 400px; background: var(--ui-card);
+  border-right: 1px solid var(--ui-border); overflow-y: auto; padding: 24px 24px 36px;
+}
+.form-group { margin-bottom: 28px; }
+.form-group-title {
+  font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--forest); margin-bottom: 14px; padding-bottom: 6px; border-bottom: 2px solid var(--sage);
+}
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-mid); margin-bottom: 4px; }
+.field input, .field textarea {
+  width: 100%; font-family: 'DM Sans', sans-serif; font-size: 14px;
+  padding: 8px 12px; border: 1px solid var(--ui-border); border-radius: 8px;
+  background: var(--ui-bg); color: var(--text-dark); outline: none; transition: border .15s;
+}
+.field input:focus, .field textarea:focus { border-color: var(--forest); box-shadow: 0 0 0 3px rgba(45,90,39,.08); }
+.field textarea { resize: vertical; min-height: 56px; }
+.field .hint { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+.char-ct { font-size: 11px; color: var(--text-light); text-align: right; margin-top: 2px; }
+.char-ct.over { color: #c0392b; font-weight: 600; }
+
+.photo-drop {
+  width: 100%; height: 100px; border: 2px dashed var(--ui-border); border-radius: 10px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  cursor: pointer; background: var(--ui-bg); position: relative; overflow: hidden; transition: all .15s;
+}
+.photo-drop:hover { border-color: var(--forest); background: var(--sage); }
+.photo-drop.has-img { border-style: solid; border-color: var(--forest); }
+.photo-drop img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+.photo-drop span { font-size: 12px; color: var(--text-light); }
+#photo-input { display: none; }
+
+.month-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
+.mo-btn {
+  font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600;
+  padding: 6px 0; border: 1px solid var(--ui-border); border-radius: 6px;
+  background: var(--ui-bg); color: var(--text-light); cursor: pointer; text-align: center; transition: all .15s;
+}
+.mo-btn.on { background: var(--forest); border-color: var(--forest); color: #fff; }
+.mo-btn:hover:not(.on) { border-color: var(--forest); color: var(--forest); }
+
+.diff-row { display: flex; gap: 6px; }
+.diff-btn {
+  flex: 1; font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600;
+  padding: 7px 0; border: 1px solid var(--ui-border); border-radius: 8px;
+  background: var(--ui-bg); color: var(--text-light); cursor: pointer; text-align: center; transition: all .15s;
+}
+.diff-btn.on { background: #E0F0E8; border-color: #1A6B44; color: #1A6B44; }
+
+/* Preview */
+.preview-panel {
+  flex: 1; display: flex; align-items: flex-start; justify-content: center;
+  padding: 28px; overflow: auto; background: #DDD8D0;
+}
+.preview-wrap { position: relative; }
+.preview-note { text-align: center; font-size: 11px; color: var(--bark-light); margin-bottom: 10px; }
+
+/* ══════════════════════════════════════
+   THE SLIDE — 1080 × 1350
+   Pixel budget:
+     Header:  76px
+     Photo:  400px
+     Name:  ~170px (overlaps photo 50px → 120px net)
+     Content: ~490px (where + why + dyk + season)
+     Footer:  84px
+     Gaps:   ~80px distributed
+     Total: 1350px
+   ══════════════════════════════════════ */
+.slide {
+  width: 1080px; height: 1350px; background: var(--cream);
+  position: relative; overflow: hidden; transform-origin: top center; flex-shrink: 0;
+}
+
+.sl-header {
+  background: var(--forest); height: 76px; padding: 0 60px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.sl-header-l { font-family: 'DM Sans', sans-serif; font-size: 22px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,.7); }
+.sl-header-r { font-family: 'DM Sans', sans-serif; font-size: 20px; color: rgba(255,255,255,.45); }
+
+.sl-photo {
+  position: relative; height: 400px; overflow: hidden;
+  background: linear-gradient(135deg, #5a8f53 0%, #3a6b35 60%, #2D5A27 100%);
+}
+.sl-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.sl-photo-empty {
+  width: 100%; height: 100%; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 14px;
+}
+.sl-photo-empty span { color: rgba(255,255,255,.4); font-size: 20px; }
+
+.sl-name {
+  position: relative; z-index: 5; margin: -50px 60px 0; background: #FFFFFF;
+  border-radius: 20px; padding: 26px 34px 22px;
+}
+.sl-name-common {
+  font-family: 'Libre Baskerville', serif; font-size: 42px; font-weight: 700;
+  color: var(--forest-deep); line-height: 1.12; overflow-wrap: break-word;
+}
+.sl-name-sci {
+  font-family: 'Libre Baskerville', serif; font-size: 22px; font-style: italic;
+  color: var(--bark-light); margin-top: 4px; overflow-wrap: break-word;
+}
+.sl-tags { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.sl-tag { font-size: 16px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; padding: 6px 16px; border-radius: 22px; }
+.sl-tag-g { background: var(--sage); color: var(--forest); }
+.sl-tag-a { background: var(--amber-light); color: var(--amber-deep); }
+.sl-tag-d { background: #E0F0E8; color: #1A6B44; }
+
+.sl-body { padding: 24px 60px 0; }
+
+.sl-sec { margin-bottom: 20px; }
+.sl-sec-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+.sl-ico { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.sl-ico svg { width: 20px; height: 20px; }
+.sl-ico-g { background: var(--sage); }
+.sl-ico-a { background: var(--amber-light); }
+.sl-sec-lbl { font-size: 18px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--forest); }
+.sl-sec-txt { font-size: 24px; line-height: 1.45; color: var(--text-mid); padding-left: 50px; }
+.sl-div { height: 1px; background: var(--sage-mid); margin: 0 0 20px 50px; opacity: .4; }
+
+.sl-dyk {
+  background: var(--forest); border-radius: 16px; padding: 24px 32px;
+  margin-bottom: 22px; position: relative; overflow: hidden;
+}
+.sl-dyk::before {
+  content: ''; position: absolute; top: -40px; right: -40px; width: 150px; height: 150px;
+  border-radius: 50%; background: rgba(255,255,255,.04);
+}
+.sl-dyk-lbl { font-size: 16px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: rgba(255,255,255,.5); margin-bottom: 6px; }
+.sl-dyk-txt { font-family: 'Libre Baskerville', serif; font-size: 24px; line-height: 1.45; color: #fff; position: relative; z-index: 1; }
+
+.sl-season { display: flex; gap: 5px; }
+.sl-mo { flex: 1; height: 36px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; text-transform: uppercase; }
+.sl-mo-off { background: var(--cream-warm); color: var(--text-light); border: 1px solid rgba(0,0,0,.04); }
+.sl-mo-on { background: var(--forest); color: #fff; }
+
+.sl-footer {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 84px;
+  padding: 0 60px; display: flex; align-items: center; justify-content: space-between;
+  background: var(--cream-warm); border-top: 1px solid rgba(0,0,0,.05);
+}
+.sl-footer-cta { font-size: 20px; color: var(--text-light); }
+.sl-footer-cta strong { color: var(--forest); font-weight: 600; }
+.sl-footer-logo {
+  width: 50px; height: 50px; border-radius: 50%; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.sl-footer-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Responsive */
+@media (max-width: 1600px) { .slide { transform: scale(0.45); margin: -371px 0; } }
+@media (max-width: 1200px) {
+  .app { flex-direction: column; }
+  .form-panel { width: 100%; min-width: auto; border-right: none; border-bottom: 1px solid var(--ui-border); max-height: 55vh; }
+  .preview-panel { padding: 16px; }
+  .slide { transform: scale(0.35); margin: -439px 0; }
+}
+
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 999; align-items: center; justify-content: center; }
+.overlay.show { display: flex; }
+.overlay-box { background: #fff; padding: 28px 36px; border-radius: 14px; text-align: center; font-size: 15px; color: var(--text-mid); }
+.spinner { width: 28px; height: 28px; border: 3px solid var(--sage); border-top-color: var(--forest); border-radius: 50%; animation: spin .6s linear infinite; margin: 0 auto 14px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="topbar-title">Flora Friday Generator</span>
+    <span class="topbar-sub">Fill in → Export</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn btn-ghost" onclick="resetAll()">Reset</button>
+    <button class="btn btn-primary" onclick="doExport()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export JPEG
+    </button>
+  </div>
+</div>
+
+<div class="app">
+
+<!-- FORM -->
+<div class="form-panel">
+
+  <div class="form-group">
+    <div class="form-group-title">Plant identity</div>
+    <div class="field">
+      <label>Common name</label>
+      <input type="text" id="f-common" placeholder="e.g. California Poppy" maxlength="28" oninput="sync()">
+      <div class="char-ct" id="cc-common"></div>
+    </div>
+    <div class="field">
+      <label>Scientific name</label>
+      <input type="text" id="f-sci" placeholder="e.g. Eschscholzia californica" maxlength="36" oninput="sync()">
+    </div>
+    <div class="field">
+      <label>Plant type</label>
+      <input type="text" id="f-type" placeholder="e.g. Annual wildflower" maxlength="18" oninput="sync()">
+    </div>
+    <div class="field">
+      <label>Habitat</label>
+      <input type="text" id="f-hab" placeholder="e.g. Grassland" maxlength="18" oninput="sync()">
+    </div>
+    <div class="field">
+      <label>Difficulty</label>
+      <div class="diff-row">
+        <button class="diff-btn on" data-v="Easy to spot" onclick="pickDiff(this)">Easy to spot</button>
+        <button class="diff-btn" data-v="Look closely" onclick="pickDiff(this)">Look closely</button>
+        <button class="diff-btn" data-v="Rare find" onclick="pickDiff(this)">Rare find</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="form-group-title">Photo</div>
+    <div class="field">
+      <div class="photo-drop" id="photo-drop" onclick="document.getElementById('photo-input').click()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-light)" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <span>Click to upload plant photo</span>
+      </div>
+      <input type="file" id="photo-input" accept="image/*" onchange="handlePhoto(this)">
+      <div class="hint">Clear, well-lit photo. Cropped to fill.</div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="form-group-title">Content</div>
+    <div class="field">
+      <label>Where to find it</label>
+      <textarea id="f-where" placeholder="Where this plant grows — terrain, areas near Clear Lake, elevation..." maxlength="140" oninput="sync()"></textarea>
+      <div class="char-ct" id="cc-where"></div>
+      <div class="hint">Keep it to 1–2 short sentences (140 chars max)</div>
+    </div>
+    <div class="field">
+      <label>Why it matters</label>
+      <textarea id="f-why" placeholder="Ecological role, pollinator benefits, cultural significance..." maxlength="150" oninput="sync()"></textarea>
+      <div class="char-ct" id="cc-why"></div>
+      <div class="hint">1–2 sentences (150 chars max)</div>
+    </div>
+    <div class="field">
+      <label>Did you know?</label>
+      <textarea id="f-dyk" placeholder="A fun, surprising fact people would share..." maxlength="130" oninput="sync()"></textarea>
+      <div class="char-ct" id="cc-dyk"></div>
+      <div class="hint">The hook — punchy and memorable (130 chars max)</div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="form-group-title">Bloom / visible season</div>
+    <div class="field">
+      <div class="month-grid" id="month-grid"></div>
+      <div class="hint" style="margin-top:4px">Click months this plant is visible</div>
+    </div>
+  </div>
+
+  <button class="btn btn-big" onclick="doExport()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Export as JPEG (1080 × 1350)
+  </button>
+</div>
+
+<!-- PREVIEW -->
+<div class="preview-panel">
+  <div class="preview-wrap">
+    <div class="preview-note">Live preview (scaled) — export is full 1080 × 1350</div>
+
+    <div class="slide" id="slide">
+      <div class="sl-header">
+        <div><span class="sl-header-l">Flora Fridays</span></div>
+        <span class="sl-header-r">with CLERC</span>
+      </div>
+
+      <div class="sl-photo" id="s-photo">
+        <div class="sl-photo-empty" id="s-photo-empty">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <span>Upload a photo</span>
+        </div>
+      </div>
+
+      <div class="sl-name">
+        <div class="sl-name-common" id="s-common">Common Name</div>
+        <div class="sl-name-sci" id="s-sci">Genus species</div>
+        <div class="sl-tags">
+          <span class="sl-tag sl-tag-g" id="s-type">Type</span>
+          <span class="sl-tag sl-tag-a" id="s-hab">Habitat</span>
+          <span class="sl-tag sl-tag-d" id="s-diff">Easy to spot</span>
+        </div>
+      </div>
+
+      <div class="sl-body">
+        <div class="sl-sec">
+          <div class="sl-sec-head">
+            <div class="sl-ico sl-ico-g"><svg viewBox="0 0 24 24" fill="none" stroke="#2D5A27" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+            <span class="sl-sec-lbl">Where to find it</span>
+          </div>
+          <p class="sl-sec-txt" id="s-where">Habitat and location details go here.</p>
+        </div>
+        <div class="sl-div"></div>
+        <div class="sl-sec">
+          <div class="sl-sec-head">
+            <div class="sl-ico sl-ico-a"><svg viewBox="0 0 24 24" fill="none" stroke="#D4890C" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+            <span class="sl-sec-lbl">Why it matters</span>
+          </div>
+          <p class="sl-sec-txt" id="s-why">Ecological importance goes here.</p>
+        </div>
+        <div class="sl-div"></div>
+        <div class="sl-dyk">
+          <div class="sl-dyk-lbl">Did you know?</div>
+          <div class="sl-dyk-txt" id="s-dyk">A fun fact goes here.</div>
+        </div>
+        <div class="sl-season" id="s-season"></div>
+      </div>
+
+      <div class="sl-footer">
+        <div class="sl-footer-cta">Seen this one? Tag us <strong>#FloraFridayCLERC</strong></div>
+        <div class="sl-footer-logo"><img src="https://bloomerang-bee.s3.amazonaws.com/images/clapton_cysx6cjdvalm_us_west_2_rds_amazonaws_com_clearlakeenvironmentalresearchcenter/b81d9aeed2a95d1160ecfea6d1ea0258.png" alt="CLERC logo"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="overlay-box"><div class="spinner"></div>Generating 1080 × 1350 JPEG…</div>
+</div>
+
+<script>
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const active = new Set();
+const mg = document.getElementById('month-grid');
+MONTHS.forEach((m, i) => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'mo-btn'; b.textContent = m;
+  b.onclick = () => { active.has(i) ? active.delete(i) : active.add(i); b.classList.toggle('on'); renderSeason(); };
+  mg.appendChild(b);
+});
+function renderSeason() {
+  document.getElementById('s-season').innerHTML = MONTHS.map((m, i) =>
+    `<div class="sl-mo ${active.has(i)?'sl-mo-on':'sl-mo-off'}">${m}</div>`
+  ).join('');
+}
+renderSeason();
+
+function cc(fId, cId, max) {
+  const n = document.getElementById(fId).value.length;
+  const el = document.getElementById(cId);
+  el.textContent = `${n} / ${max}`;
+  el.className = n > max ? 'char-ct over' : 'char-ct';
+}
+
+function sync() {
+  [['f-common','s-common','Common Name'],['f-sci','s-sci','Genus species'],['f-type','s-type','Type'],
+   ['f-hab','s-hab','Habitat'],['f-where','s-where','Habitat and location details go here.'],
+   ['f-why','s-why','Ecological importance goes here.'],['f-dyk','s-dyk','A fun fact goes here.']
+  ].forEach(([f,s,fb]) => { document.getElementById(s).textContent = document.getElementById(f).value.trim() || fb; });
+  cc('f-common','cc-common',28); cc('f-where','cc-where',140); cc('f-why','cc-why',150); cc('f-dyk','cc-dyk',130);
+}
+
+function pickDiff(btn) {
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('s-diff').textContent = btn.dataset.v;
+}
+
+function handlePhoto(input) {
+  const file = input.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = e => {
+    const url = e.target.result;
+    const drop = document.getElementById('photo-drop');
+    drop.classList.add('has-img');
+    drop.innerHTML = `<img src="${url}">`;
+    const ph = document.getElementById('s-photo-empty'); if (ph) ph.style.display = 'none';
+    let img = document.getElementById('s-photo').querySelector(':scope > img');
+    if (!img) { img = document.createElement('img'); document.getElementById('s-photo').insertBefore(img, document.getElementById('s-photo').firstChild); }
+    img.src = url;
+  };
+  r.readAsDataURL(file);
+}
+
+function resetAll() {
+  document.querySelectorAll('.form-panel input[type="text"],.form-panel input[type="number"],.form-panel textarea').forEach(el => el.value = '');
+  active.clear();
+  document.querySelectorAll('.mo-btn').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('on'));
+  document.querySelector('.diff-btn[data-v="Easy to spot"]').classList.add('on');
+  document.getElementById('s-diff').textContent = 'Easy to spot';
+  const drop = document.getElementById('photo-drop');
+  drop.classList.remove('has-img');
+  drop.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-light)" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg><span>Click to upload plant photo</span>`;
+  const sp = document.getElementById('s-photo');
+  const ei = sp.querySelector(':scope > img'); if (ei) ei.remove();
+  const ph = document.getElementById('s-photo-empty'); if (ph) ph.style.display = '';
+  sync(); renderSeason();
+}
+
+async function doExport() {
+  const ov = document.getElementById('overlay'); ov.classList.add('show');
+  const slide = document.getElementById('slide');
+  const oT = slide.style.transform, oM = slide.style.margin;
+  slide.style.transform = 'none'; slide.style.margin = '0';
+  try {
+    await document.fonts.ready;
+    await new Promise(r => setTimeout(r, 300));
+    const canvas = await html2canvas(slide, { width: 1080, height: 1350, scale: 1, useCORS: true, allowTaint: true, backgroundColor: '#FDFAF5', logging: false });
+    const a = document.createElement('a');
+    const name = document.getElementById('f-common').value.trim().replace(/\s+/g,'_') || 'Flora_Friday';
+    a.download = `Flora_Friday_${name}.jpg`;
+    a.href = canvas.toDataURL('image/jpeg', 0.95);
+    a.click();
+  } catch(err) { alert('Export failed: ' + err.message); }
+  finally { slide.style.transform = oT; slide.style.margin = oM; ov.classList.remove('show'); }
+}
+
+sync();
+</script>
+</body>
+</html>
