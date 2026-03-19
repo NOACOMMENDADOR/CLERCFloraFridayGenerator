@@ -79,6 +79,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--ui-bg); color: var(
 .field input:focus, .field textarea:focus { border-color: var(--forest); box-shadow: 0 0 0 3px rgba(45,90,39,.08); }
 .field textarea { resize: vertical; min-height: 56px; }
 .field .hint { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+.img-spec {
+  margin-top: 6px; padding: 8px 12px; background: var(--sage); border-radius: 8px;
+  font-size: 11px; color: var(--forest); line-height: 1.5;
+}
+.img-spec strong { font-weight: 700; }
 .char-ct { font-size: 11px; color: var(--text-light); text-align: right; margin-top: 2px; }
 .char-ct.over { color: #c0392b; font-weight: 600; }
 
@@ -120,95 +125,110 @@ body { font-family: 'DM Sans', sans-serif; background: var(--ui-bg); color: var(
 
 /* ══════════════════════════════════════
    THE SLIDE — 1080 × 1350
-   Pixel budget:
-     Header:  76px
-     Photo:  400px
-     Name:  ~170px (overlaps photo 50px → 120px net)
-     Content: ~490px (where + why + dyk + season)
-     Footer:  84px
-     Gaps:   ~80px distributed
-     Total: 1350px
+   Uses flexbox column so content always
+   fills the space between hero and footer.
    ══════════════════════════════════════ */
 .slide {
   width: 1080px; height: 1350px; background: var(--cream);
   position: relative; overflow: hidden; transform-origin: top center; flex-shrink: 0;
+  display: flex; flex-direction: column;
 }
 
+/* Header: 76px fixed */
 .sl-header {
-  background: var(--forest); height: 76px; padding: 0 60px;
+  background: var(--forest); height: 76px; min-height: 76px; padding: 0 60px;
   display: flex; align-items: center; justify-content: space-between;
 }
-.sl-header-l { font-family: 'DM Sans', sans-serif; font-size: 22px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,.7); }
-.sl-header-r { font-family: 'DM Sans', sans-serif; font-size: 20px; color: rgba(255,255,255,.45); }
+.sl-header-l { font-family: 'DM Sans', sans-serif; font-size: 24px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,.75); }
+.sl-header-r { font-family: 'DM Sans', sans-serif; font-size: 22px; color: rgba(255,255,255,.5); }
 
-.sl-photo {
-  position: relative; height: 400px; overflow: hidden;
+/* Hero: 440px fixed — photo left (440×440 square) + name right */
+.sl-hero {
+  display: flex; height: 440px; min-height: 440px;
+}
+.sl-hero-photo {
+  width: 440px; min-width: 440px; height: 440px;
+  position: relative; overflow: hidden;
   background: linear-gradient(135deg, #5a8f53 0%, #3a6b35 60%, #2D5A27 100%);
 }
-.sl-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
-.sl-photo-empty {
+/* IMAGE: never stretch, never skew. Center-crop only. */
+.sl-hero-photo img {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 100%; min-height: 100%;
+  width: auto; height: auto;
+  object-fit: cover;
+}
+.sl-hero-photo-empty {
   width: 100%; height: 100%; display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 14px;
 }
-.sl-photo-empty span { color: rgba(255,255,255,.4); font-size: 20px; }
+.sl-hero-photo-empty span { color: rgba(255,255,255,.4); font-size: 20px; }
 
-.sl-name {
-  position: relative; z-index: 5; margin: -50px 60px 0; background: #FFFFFF;
-  border-radius: 20px; padding: 26px 34px 22px;
+.sl-hero-info {
+  flex: 1; background: #FFFFFF; padding: 44px 48px;
+  display: flex; flex-direction: column; justify-content: center;
 }
 .sl-name-common {
-  font-family: 'Libre Baskerville', serif; font-size: 42px; font-weight: 700;
-  color: var(--forest-deep); line-height: 1.12; overflow-wrap: break-word;
+  font-family: 'Libre Baskerville', serif; font-size: 44px; font-weight: 700;
+  color: var(--forest-deep); line-height: 1.1; overflow-wrap: break-word;
 }
 .sl-name-sci {
-  font-family: 'Libre Baskerville', serif; font-size: 22px; font-style: italic;
-  color: var(--bark-light); margin-top: 4px; overflow-wrap: break-word;
+  font-family: 'Libre Baskerville', serif; font-size: 24px; font-style: italic;
+  color: var(--bark-light); margin-top: 10px; overflow-wrap: break-word;
 }
-.sl-tags { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
-.sl-tag { font-size: 16px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; padding: 6px 16px; border-radius: 22px; }
+.sl-tags { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+.sl-tag { font-size: 18px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; padding: 7px 18px; border-radius: 24px; }
 .sl-tag-g { background: var(--sage); color: var(--forest); }
 .sl-tag-a { background: var(--amber-light); color: var(--amber-deep); }
 .sl-tag-d { background: #E0F0E8; color: #1A6B44; }
 
-.sl-body { padding: 24px 60px 0; }
+/* Content body: FLEX GROWS to fill all remaining space */
+.sl-body {
+  flex: 1; padding: 36px 60px 0;
+  display: flex; flex-direction: column;
+  justify-content: space-between;
+}
+/* Group the text sections together */
+.sl-body-sections { flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; }
 
-.sl-sec { margin-bottom: 20px; }
-.sl-sec-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
-.sl-ico { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.sl-ico svg { width: 20px; height: 20px; }
+.sl-sec-head { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+.sl-ico { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.sl-ico svg { width: 22px; height: 22px; }
 .sl-ico-g { background: var(--sage); }
 .sl-ico-a { background: var(--amber-light); }
-.sl-sec-lbl { font-size: 18px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--forest); }
-.sl-sec-txt { font-size: 24px; line-height: 1.45; color: var(--text-mid); padding-left: 50px; }
-.sl-div { height: 1px; background: var(--sage-mid); margin: 0 0 20px 50px; opacity: .4; }
+.sl-sec-lbl { font-size: 20px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--forest); }
+.sl-sec-txt { font-size: 26px; line-height: 1.45; color: var(--text-mid); padding-left: 56px; }
+.sl-div { height: 1px; background: var(--sage-mid); margin: 0 0 0 56px; opacity: .35; }
 
+/* Did you know */
 .sl-dyk {
-  background: var(--forest); border-radius: 16px; padding: 24px 32px;
-  margin-bottom: 22px; position: relative; overflow: hidden;
+  background: var(--forest); border-radius: 18px; padding: 28px 36px;
+  position: relative; overflow: hidden;
 }
 .sl-dyk::before {
-  content: ''; position: absolute; top: -40px; right: -40px; width: 150px; height: 150px;
+  content: ''; position: absolute; top: -40px; right: -40px; width: 160px; height: 160px;
   border-radius: 50%; background: rgba(255,255,255,.04);
 }
-.sl-dyk-lbl { font-size: 16px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: rgba(255,255,255,.5); margin-bottom: 6px; }
-.sl-dyk-txt { font-family: 'Libre Baskerville', serif; font-size: 24px; line-height: 1.45; color: #fff; position: relative; z-index: 1; }
+.sl-dyk-lbl { font-size: 18px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: rgba(255,255,255,.5); margin-bottom: 8px; }
+.sl-dyk-txt { font-family: 'Libre Baskerville', serif; font-size: 26px; line-height: 1.45; color: #fff; position: relative; z-index: 1; }
 
-.sl-season { display: flex; gap: 5px; }
-.sl-mo { flex: 1; height: 36px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; text-transform: uppercase; }
+/* Season bar — always at bottom of sl-body */
+.sl-season { display: flex; gap: 5px; padding-top: 8px; }
+.sl-mo { flex: 1; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; text-transform: uppercase; }
 .sl-mo-off { background: var(--cream-warm); color: var(--text-light); border: 1px solid rgba(0,0,0,.04); }
 .sl-mo-on { background: var(--forest); color: #fff; }
 
+/* Footer: 84px fixed, always at bottom */
 .sl-footer {
-  position: absolute; bottom: 0; left: 0; right: 0; height: 84px;
-  padding: 0 60px; display: flex; align-items: center; justify-content: space-between;
+  height: 84px; min-height: 84px; padding: 0 60px;
+  display: flex; align-items: center; justify-content: space-between;
   background: var(--cream-warm); border-top: 1px solid rgba(0,0,0,.05);
 }
-.sl-footer-cta { font-size: 20px; color: var(--text-light); }
+.sl-footer-cta { font-size: 22px; color: var(--text-light); }
 .sl-footer-cta strong { color: var(--forest); font-weight: 600; }
-.sl-footer-logo {
-  width: 50px; height: 50px; border-radius: 50%; overflow: hidden;
-  display: flex; align-items: center; justify-content: center;
-}
+.sl-footer-logo { width: 50px; height: 50px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; }
 .sl-footer-logo img { width: 100%; height: 100%; object-fit: cover; }
 
 /* Responsive */
@@ -231,7 +251,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--ui-bg); color: var(
 
 <div class="topbar">
   <div class="topbar-left">
-    <span class="topbar-title">Featured Flora Friday Generator</span>
+    <span class="topbar-title">Flora Friday Generator</span>
     <span class="topbar-sub">Fill in → Export</span>
   </div>
   <div class="topbar-actions">
@@ -285,7 +305,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--ui-bg); color: var(
         <span>Click to upload plant photo</span>
       </div>
       <input type="file" id="photo-input" accept="image/*" onchange="handlePhoto(this)">
-      <div class="hint">Clear, well-lit photo. Cropped to fill.</div>
+      <div class="img-spec">
+        <strong>Recommended:</strong> Square image, at least <strong>440 × 440px</strong><br>
+        Larger images will be center-cropped. Never stretched or skewed.
+      </div>
     </div>
   </div>
 
@@ -295,7 +318,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--ui-bg); color: var(
       <label>Where to find it</label>
       <textarea id="f-where" placeholder="Where this plant grows — terrain, areas near Clear Lake, elevation..." maxlength="140" oninput="sync()"></textarea>
       <div class="char-ct" id="cc-where"></div>
-      <div class="hint">Keep it to 1–2 short sentences (140 chars max)</div>
+      <div class="hint">1–2 short sentences (140 chars max)</div>
     </div>
     <div class="field">
       <label>Why it matters</label>
@@ -307,7 +330,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--ui-bg); color: var(
       <label>Did you know?</label>
       <textarea id="f-dyk" placeholder="A fun, surprising fact people would share..." maxlength="130" oninput="sync()"></textarea>
       <div class="char-ct" id="cc-dyk"></div>
-      <div class="hint">The hook — punchy and memorable (130 chars max)</div>
+      <div class="hint">Punchy and memorable (130 chars max)</div>
     </div>
   </div>
 
@@ -331,56 +354,73 @@ body { font-family: 'DM Sans', sans-serif; background: var(--ui-bg); color: var(
     <div class="preview-note">Live preview (scaled) — export is full 1080 × 1350</div>
 
     <div class="slide" id="slide">
+
+      <!-- Header -->
       <div class="sl-header">
-        <div><span class="sl-header-l">Flora Fridays</span></div>
+        <div><span class="sl-header-l">FEatured Flora Fridays</span></div>
         <span class="sl-header-r">with CLERC</span>
       </div>
 
-      <div class="sl-photo" id="s-photo">
-        <div class="sl-photo-empty" id="s-photo-empty">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          <span>Upload a photo</span>
+      <!-- Hero: square photo left + name right -->
+      <div class="sl-hero">
+        <div class="sl-hero-photo" id="s-photo">
+          <div class="sl-hero-photo-empty" id="s-photo-empty">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <span>Upload a photo</span>
+          </div>
+        </div>
+        <div class="sl-hero-info">
+          <div class="sl-name-common" id="s-common">Common Name</div>
+          <div class="sl-name-sci" id="s-sci">Genus species</div>
+          <div class="sl-tags">
+            <span class="sl-tag sl-tag-g" id="s-type">Type</span>
+            <span class="sl-tag sl-tag-a" id="s-hab">Habitat</span>
+            <span class="sl-tag sl-tag-d" id="s-diff">Easy to spot</span>
+          </div>
         </div>
       </div>
 
-      <div class="sl-name">
-        <div class="sl-name-common" id="s-common">Common Name</div>
-        <div class="sl-name-sci" id="s-sci">Genus species</div>
-        <div class="sl-tags">
-          <span class="sl-tag sl-tag-g" id="s-type">Type</span>
-          <span class="sl-tag sl-tag-a" id="s-hab">Habitat</span>
-          <span class="sl-tag sl-tag-d" id="s-diff">Easy to spot</span>
-        </div>
-      </div>
-
+      <!-- Content: flex-grows to fill remaining space -->
       <div class="sl-body">
-        <div class="sl-sec">
-          <div class="sl-sec-head">
-            <div class="sl-ico sl-ico-g"><svg viewBox="0 0 24 24" fill="none" stroke="#2D5A27" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
-            <span class="sl-sec-lbl">Where to find it</span>
+        <div class="sl-body-sections">
+
+          <div class="sl-sec">
+            <div class="sl-sec-head">
+              <div class="sl-ico sl-ico-g"><svg viewBox="0 0 24 24" fill="none" stroke="#2D5A27" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+              <span class="sl-sec-lbl">Where to find it</span>
+            </div>
+            <p class="sl-sec-txt" id="s-where">Habitat and location details go here.</p>
           </div>
-          <p class="sl-sec-txt" id="s-where">Habitat and location details go here.</p>
-        </div>
-        <div class="sl-div"></div>
-        <div class="sl-sec">
-          <div class="sl-sec-head">
-            <div class="sl-ico sl-ico-a"><svg viewBox="0 0 24 24" fill="none" stroke="#D4890C" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
-            <span class="sl-sec-lbl">Why it matters</span>
+
+          <div class="sl-div"></div>
+
+          <div class="sl-sec">
+            <div class="sl-sec-head">
+              <div class="sl-ico sl-ico-a"><svg viewBox="0 0 24 24" fill="none" stroke="#D4890C" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+              <span class="sl-sec-lbl">Why it matters</span>
+            </div>
+            <p class="sl-sec-txt" id="s-why">Ecological importance goes here.</p>
           </div>
-          <p class="sl-sec-txt" id="s-why">Ecological importance goes here.</p>
+
+          <div class="sl-div"></div>
+
+          <div class="sl-dyk">
+            <div class="sl-dyk-lbl">Did you know?</div>
+            <div class="sl-dyk-txt" id="s-dyk">A fun fact goes here.</div>
+          </div>
+
         </div>
-        <div class="sl-div"></div>
-        <div class="sl-dyk">
-          <div class="sl-dyk-lbl">Did you know?</div>
-          <div class="sl-dyk-txt" id="s-dyk">A fun fact goes here.</div>
-        </div>
+
+        <!-- Season bar always anchored at bottom of content -->
         <div class="sl-season" id="s-season"></div>
       </div>
 
+      <!-- Footer -->
       <div class="sl-footer">
         <div class="sl-footer-cta">Seen this one? Tag us <strong>#FloraFridayCLERC</strong></div>
         <div class="sl-footer-logo"><img src="https://bloomerang-bee.s3.amazonaws.com/images/clapton_cysx6cjdvalm_us_west_2_rds_amazonaws_com_clearlakeenvironmentalresearchcenter/b81d9aeed2a95d1160ecfea6d1ea0258.png" alt="CLERC logo"></div>
       </div>
+
     </div>
   </div>
 </div>
