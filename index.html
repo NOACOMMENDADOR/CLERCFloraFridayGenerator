@@ -224,7 +224,15 @@ body { font-family: 'DM Sans', sans-serif; background: var(--ui-bg); color: var(
   flex: 1; padding: 36px 60px 0;
   display: flex; flex-direction: column; justify-content: space-between;
 }
-.sl-body-sections { flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; }
+.sl-body-sections { flex: 1; display: flex; flex-direction: column; }
+/* Each mode's wrapper fills the sections area and distributes children evenly */
+#sec-native, #sec-invasive {
+  display: flex; flex-direction: column; flex: 1;
+  justify-content: space-between; gap: 0;
+}
+#sec-native.hidden, #sec-invasive.hidden { display: none !important; }
+/* Each content block gets equal flex share */
+.sl-sec { flex: 1; display: flex; flex-direction: column; justify-content: center; }
 .sl-sec-head { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
 .sl-ico { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .sl-ico svg { width: 22px; height: 22px; }
@@ -236,12 +244,13 @@ body { font-family: 'DM Sans', sans-serif; background: var(--ui-bg); color: var(
 .sl-sec-lbl { font-size: 20px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--forest); transition: color .3s; }
 .sl-sec-lbl.inv-lbl { color: var(--inv-red); }
 .sl-sec-txt { font-size: 26px; line-height: 1.45; color: var(--text-mid); padding-left: 56px; }
-.sl-div { height: 1px; background: var(--sage-mid); margin: 0 0 0 56px; opacity: .35; }
+.sl-div { height: 1px; background: var(--sage-mid); margin: 0 0 0 56px; opacity: .35; flex-shrink: 0; flex-grow: 0; }
 .sl-div.inv-div { background: var(--inv-red-mid); }
 /* Did you know / Take action */
 .sl-dyk {
   background: var(--forest); border-radius: 18px; padding: 28px 36px;
   position: relative; overflow: hidden; transition: background .3s;
+  flex: 1; display: flex; flex-direction: column; justify-content: center;
 }
 .sl-dyk.inv-dyk { background: var(--inv-red-deep); }
 .sl-dyk::before {
